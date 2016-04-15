@@ -23,7 +23,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.post('/osn', function(req, res, next) {
-  osn.postMessageToOSN('admin', 'waggle', 70066, 'Hey from Node.Js', function(err, resp, body) {
+  
+  var botUserName = req.body.botUserName,
+      botPassword = req.body.botPassword,
+      conversationId = req.body.conversationId,
+      message = req.body.message;
+  
+  osn.postMessageToOSN(botUserName, botPassword, conversationId, message, function(err, resp, body) {
     if (err || resp.statusCode != 200) {
       res.send('error' + JSON.stringify(err));
     }

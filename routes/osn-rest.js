@@ -18,7 +18,10 @@ var conversationsEndPoint = osnRestFullPath + '/conversations';
 module.exports.postMessageToOSN = function(userName, password, conversationId, message, callback) {
   console.log("Connections end point: " + connectionsEndPoint);
 
-  if (!hasValidParams(userName, password, conversationId, message)) {
+  var invalidParamsMsg = checkValidParams(userName, password, conversationId, message);
+  
+  if (typeof invalidParamsMsg !== 'undefined') {
+    callback(invalidParamsMsg);
     return;
   }
   
@@ -102,32 +105,23 @@ function printResponseError(err, response) {
 }
 
 
-function hasValidParams(userName, password, conversationId, message) {
-  var errorMsg;
+function checkValidParams(userName, password, conversationId, message) {
 
   if (typeof userName === 'undefined') {
-    errorMsg = "Username is not specified. Aborting REST call to OSN";
-    console.log(errorMsg);
-    return false;
+    return "Username is not specified. Aborting REST call to OSN";
   }
 
   if (typeof password === 'undefined') {
-    errorMsg = "Password is not specified. Aborting REST call to OSN";
-    console.log(errorMsg);
-    return false;
+    return "Password is not specified. Aborting REST call to OSN";
   }
 
   if (typeof conversationId === 'undefined') {
-    errorMsg = "Conversation ID not specified. Aborting REST call to OSN";
-    console.log(errorMsg);
-    return false;
+    return "Conversation ID not specified. Aborting REST call to OSN";
   }
 
   if (typeof message === 'undefined') {
-    errorMsg = "Message not specified. Aborting REST call to OSN.";
-    console.log(errorMsg);
-    return false;
+    return "Message not specified. Aborting REST call to OSN.";
   }
 
-  return true;
+  return;
 }
