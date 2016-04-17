@@ -15,7 +15,12 @@ var connectionsEndPoint = osnRestFullPath + '/connections';
 var conversationsEndPoint = osnRestFullPath + '/conversations';
 
 
-module.exports.postMessageToOSN = function(userName, password, conversationId, message, callback) {
+module.exports.postMessageToOSN = function(data, callback) {
+  var userName = data.botUserName,
+      password = data.botPassword, 
+      conversationId = data.conversationId,
+      message = data.message;
+  
   console.log("Connections end point: " + connectionsEndPoint);
 
   var invalidParamsMsg = checkValidParams(userName, password, conversationId, message);
@@ -82,14 +87,14 @@ function createMessage(apiRandomId, cookie, convId, message, callback) {
       cookie: cookie
     }
   }, function(err, response, body) {
-     if (err || response.statusCode != 200) {
-       printResponseError(err, response);
-     }
-     else {
-        console.log('Response: ' + JSON.stringify(response, null, 4));
-        console.log('Body: ' + JSON.stringify(body, null, 4));
-        callback(err, response, body);
-     }
+       if (err || response.statusCode != 200) {
+         printResponseError(err, response);
+       }
+       else {
+          console.log('Response: ' + JSON.stringify(response, null, 4));
+          console.log('Body: ' + JSON.stringify(body, null, 4));
+       }
+       callback(err, response, body);
   });  
 }
 

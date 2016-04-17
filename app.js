@@ -4,10 +4,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var socketIo = require('socket.io');
 
 var osn = require('./routes/osn-rest');
 
 var app = express();
+var io = socketIo();
+
+app.io = io;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -23,13 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.post('/osn', function(req, res, next) {
-  
-  var botUserName = req.body.botUserName,
-      botPassword = req.body.botPassword,
-      conversationId = req.body.conversationId,
-      message = req.body.message;
-  
-  osn.postMessageToOSN(botUserName, botPassword, conversationId, message, function(err, resp, body) {
+  osn.postMessageToOSN(req.body, function(err, resp, body) {
     if (err || resp.statusCode != 200) {
       res.send('error' + JSON.stringify(err));
     }
@@ -39,6 +37,32 @@ app.post('/osn', function(req, res, next) {
   });
 });
 
+// Socket IO event handlers
+
+io.on('connection', function(socket) {
+  console.log('A user connected');
+  
+  socket.on('disconnect', function() {
+    console.log('A user disconnect');
+  });
+  
+  socket.on('botMessage', function(data, callback) {
+    console.log("Received botMessage");
+    console.log("-- Body: " + JSON.stringify(data, null, 4));
+    
+    if (typeof data === 'undefined') {
+      callback("Error: body is not defined");
+    }
+    
+    osn.postMessageToOSN(data, function(err, resp, body) {
+      if (err || resp.statusCode != 200) {
+        console.log("Uh oh, something went wrong. From Socket 'botMessage' event");
+      }
+      callback(err, resp, body);
+    });
+    
+  });
+});
 
 
 // catch 404 and forward to error handler
