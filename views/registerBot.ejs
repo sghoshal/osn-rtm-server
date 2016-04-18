@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <% include head %>
+  </head>
+  <body>
+    <div id="main" class="container">
+      <form action="/registerBot" method="post" class="form-signin">
+        <h4 class="form-signin-heading text-center">Fill in the details for your Bot.</h2>
+        <hr>
+        <label>Bot Token</label>
+        <p><%= botToken %> </p>
+
+        <label for="botToken" class="sr-only">Bot Token</label>
+        <input type="hidden" name="botToken" value="<%= botToken %>">
+        
+        <label for="botUserName" class="sr-only">Bot User Name</label>
+        <input id="botUserName" type="text" name="botUserName" placeholder="Bot Name" required="" autofocus="" class="form-control">
+
+        <label for="botServerUrl" class="sr-only">Bot Server URL</label>
+        <input id="botServerUrl" type="text" name="botServerUrl" placeholder="OSN server URL where the bot will reside" required="" autofocus="" class="form-control">
+        
+        <button id="btn-sign-in" type="submit" class="btn btn-lg btn-primary btn-block">Register Bot</button>
+        
+        <hr>
+      </form>
+    </div>
+  </body>
+</html>

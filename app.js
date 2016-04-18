@@ -5,8 +5,13 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var socketIo = require('socket.io');
+var mongoose = require('mongoose');
+
+// MongoDB schema + init code.
+mongoose.connect('mongodb://localhost/osnRtm');
 
 var osn = require('./routes/osn-rest');
+var registerBot = require('./routes/registerBot');
 
 var app = express();
 var io = socketIo();
@@ -15,7 +20,7 @@ app.io = io;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -25,6 +30,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+app.use('/registerBot', registerBot);
+
+app.get('/', function(req, res, next) {
+  res.send('I win here I win there I win everywhere');
+});
+
+// Test end point.
 
 app.post('/osn', function(req, res, next) {
   osn.postMessageToOSN(req.body, function(err, resp, body) {
@@ -40,12 +53,15 @@ app.post('/osn', function(req, res, next) {
 // Socket IO event handlers
 
 io.on('connection', function(socket) {
-  console.log('A user connected');
+  console.log('A bot connected');
+  console.log("Socket created: " + socket);
   
   socket.on('disconnect', function() {
-    console.log('A user disconnect');
+    console.log('A bot disconnected');
   });
   
+  // botMessage event handler:
+  // - Message received from bot client.
   socket.on('botMessage', function(data, callback) {
     console.log("Received botMessage");
     console.log("-- Body: " + JSON.stringify(data, null, 4));
@@ -95,6 +111,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;
