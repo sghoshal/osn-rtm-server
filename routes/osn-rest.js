@@ -32,21 +32,12 @@ module.exports.postMessageToOSN = function(data, callback) {
   
   getConnectionAndCreateMessage(userName, password, conversationId, message, callback);
 }
-            
+ 
 function getConnectionAndCreateMessage(userName, password, conversationId, message, callback) {
   var apiRandomId;
   var cookie;
-
-  request.post({
-    headers: {
-      'Content-type': 'application/json'
-    },
-    url: connectionsEndPoint,
-    json: {
-      name: userName,
-      password: password
-    }
-  }, function(err, response, body) {
+  
+  getConnection(userName, password, function(err, response, body) {
       if (err || response.statusCode != 200) {
         printResponseError(err, response);  
         callback(err, response);
@@ -66,6 +57,20 @@ function getConnectionAndCreateMessage(userName, password, conversationId, messa
   });
 }
 
+function getConnection(userName, password, callback) {
+  request.post({
+    headers: {
+      'Content-type': 'application/json'
+    },
+    url: connectionsEndPoint,
+    json: {
+      name: userName,
+      password: password
+    }
+  }, function(err, response, body) {
+        callback(err, response, body);
+  });
+}
 
 function createMessage(apiRandomId, cookie, convId, message, callback) {
   
