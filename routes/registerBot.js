@@ -22,10 +22,10 @@ router.post('/', function(req, res, next) {
   // But OSN REST API does not have a handler for creating users
   // in the DB realm. This needs to be figured out. (TODO).
   
-  var bot = new mongoModel.Bot({
+  var bot = new mongoModel.Bots({
     'token': req.body.botToken,
     'userName': req.body.botUserName,
-    'botHost': req.body.botServerUrl
+    'botServerUrl': req.body.botServerUrl
   });
   
   bot.save(function(err, bot) {
@@ -34,6 +34,9 @@ router.post('/', function(req, res, next) {
       if (err.code === 11000) {
         console.log("Credentials already exist");
       }
+    }
+    else {
+      res.redirect('../');
     }
   });
 });

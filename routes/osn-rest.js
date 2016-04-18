@@ -5,39 +5,34 @@ var express = require('express');
 
 var router = express.Router();
 
-var osnHost = 'http://localhost';
-var osnPort = 8080;
-var osnContext = '/osn';
 var osnRestPath = '/social/api/v1';
 
-var osnRestFullPath = osnHost + ':' + osnPort.toString() + osnContext + osnRestPath;
-var connectionsEndPoint = osnRestFullPath + '/connections';
-var conversationsEndPoint = osnRestFullPath + '/conversations';
-
-
 module.exports.postMessageToOSN = function(data, callback) {
+  console.log("postMessageToOSN - Received data: " + JSON.stringify(data));
+  
   var userName = data.botUserName,
       password = data.botPassword, 
+      botServerUrl = data.botServerUrl,
       conversationId = data.conversationId,
       message = data.message;
   
-  console.log("Connections end point: " + connectionsEndPoint);
-
-  var invalidParamsMsg = checkValidParams(userName, password, conversationId, message);
+  var botServerRestEndPoint = botServerUrl + osnRestPath;
+  
+  var invalidParamsMsg = checkValidParams(userName, password, botServerRestEndPoint, conversationId, message);
   
   if (typeof invalidParamsMsg !== 'undefined') {
     callback(invalidParamsMsg);
     return;
   }
   
-  getConnectionAndCreateMessage(userName, password, conversationId, message, callback);
+  getConnectionAndCreateMessage(userName, password, botServerRestEndPoint, conversationId, message, callback);
 }
  
-function getConnectionAndCreateMessage(userName, password, conversationId, message, callback) {
+function getConnectionAndCreateMessage(userName, password, botServerRestEndPoint, conversationId, message, callback) {
   var apiRandomId;
   var cookie;
   
-  getConnection(userName, password, function(err, response, body) {
+  getConnection(userName, password, botServerRestEndPoint, function(err, response, body) {
       if (err || response.statusCode != 200) {
         printResponseError(err, response);  
         callback(err, response);
@@ -52,17 +47,21 @@ function getConnectionAndCreateMessage(userName, password, conversationId, messa
         console.log("API Random ID: " + apiRandomId);
         console.log("Cookie: " + cookie);
         
-        createMessage(apiRandomId, cookie, conversationId, message, callback);
+        createMessage(apiRandomId, cookie, botServerRestEndPoint, conversationId, message, callback);
       }
   });
 }
 
-function getConnection(userName, password, callback) {
+function getConnection(userName, password, botServerRestEndPoint, callback) {
+  var connectionsUrl = botServerRestEndPoint + '/connections';
+  
+  console.log("-- Connections end point: " + connectionsUrl);
+
   request.post({
     headers: {
       'Content-type': 'application/json'
     },
-    url: connectionsEndPoint,
+    url: connectionsUrl,
     json: {
       name: userName,
       password: password
@@ -72,9 +71,10 @@ function getConnection(userName, password, callback) {
   });
 }
 
-function createMessage(apiRandomId, cookie, convId, message, callback) {
+function createMessage(apiRandomId, cookie, botServerRestEndPoint, convId, message, callback) {
   
-  var messagesEndPoint = conversationsEndPoint + '/' + convId.toString() + '/messages';
+  var messagesEndPoint = botServerRestEndPoint + '/conversations/' + convId.toString() + '/messages';
+  
   console.log("Messages End Point: " + messagesEndPoint);
   
   console.log("Using Random ID: " + apiRandomId);
@@ -115,7 +115,7 @@ function printResponseError(err, response) {
 }
 
 
-function checkValidParams(userName, password, conversationId, message) {
+function checkValidParams(userName, password, botServerRestEndPoint, conversationId, message) {
 
   if (typeof userName === 'undefined') {
     return "Username is not specified. Aborting REST call to OSN";
@@ -123,6 +123,10 @@ function checkValidParams(userName, password, conversationId, message) {
 
   if (typeof password === 'undefined') {
     return "Password is not specified. Aborting REST call to OSN";
+  }
+  
+  if (typeof botServerRestEndPoint === 'undefined') {
+    return "The Server URL of the bot is not specified. Aborting REST call to OSN";
   }
 
   if (typeof conversationId === 'undefined') {
